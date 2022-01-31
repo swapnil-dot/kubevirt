@@ -1,0 +1,36 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: virtvnc
+  namespace: default
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: virtvnc
+  template:
+    metadata:
+      labels:
+        app: virtvnc
+    spec:
+      serviceAccountName: virtvnc
+      nodeSelector:
+        node-role.kubernetes.io/master: ""
+      tolerations:
+        - key: "node-role.kubernetes.io/master"
+          operator: "Equal"
+          value: ""
+          effect: "NoSchedule"
+      containers:
+        - name: virtvnc
+          image: quay.io/samblade/virtvnc:v0.1
+          livenessProbe:
+            httpGet:
+              port: 8001
+              path: /
+              scheme: HTTP
+            failureThreshold: 30
+            initialDelaySeconds: 30
+            periodSeconds: 10
+            successThreshold: 1
+            timeoutSeconds: 5
